@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>2025 LBLL Fall Ball Schedule</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    iframe {
+      width: 100%;
+      max-width: 800px;
+      height: 1000px;
+      border: none;
+      box-shadow: 0 0 12px rgba(0,0,0,0.2);
+      background: white;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <iframe id="scheduleFrame" title="Fall Ball Schedule Viewer"></iframe>
+  <div id="errorMsg" class="error"></div>
+
+  <script>
+    const weeks = [
+      { file: "Week01.html", date: "2025-09-14" },
+      { file: "Week02.html", date: "2025-09-21" },
+      { file: "Week03.html", date: "2025-09-28" },
+      { file: "Week04.html", date: "2025-10-05" },
+      { file: "Week05.html", date: "2025-10-12" },
+      { file: "Week06.html", date: "2025-10-19" },
+      { file: "Week07.html", date: "2025-10-26" },
+      { file: "Week08.html", date: "2025-11-02" },
+      { file: "Week09.html", date: "2025-11-09" },
+      { file: "Week10.html", date: "2025-11-16" }
+    ];
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // strip time
+
+    const upcoming = weeks.find(week => {
+      const weekDate = new Date(week.date);
+      weekDate.setHours(0, 0, 0, 0);
+      return weekDate >= today;
+    });
+
+    const frame = document.getElementById("scheduleFrame");
+    const error = document.getElementById("errorMsg");
+
+    if (upcoming) {
+      frame.src = upcoming.file;
+    } else {
+      frame.style.display = "none";
+      error.textContent = "No upcoming schedule found.";
+    }
+  </script>
+</body>
+</html>
