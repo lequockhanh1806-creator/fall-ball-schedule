@@ -24,6 +24,7 @@
       border: none;
       box-shadow: 0 0 12px rgba(0,0,0,0.2);
       background: white;
+      display: none;
     }
 
     .error {
@@ -35,7 +36,7 @@
   </style>
 </head>
 <body>
-  <iframe id="scheduleFrame" title="Fall Ball Schedule Viewer" style="display: none;"></iframe>
+  <iframe id="scheduleFrame" title="Fall Ball Schedule Viewer"></iframe>
   <div id="errorMsg" class="error"></div>
 
   <script>
@@ -74,33 +75,64 @@
     const error = document.getElementById("errorMsg");
 
     if (selectedWeek) {
-      // Try to fetch the file before showing it
       fetch(selectedWeek.file)
         .then(response => {
-          if (!response.ok) {
-            throw new Error("File not found");
-          }
+          if (!response.ok) throw new Error("File not found");
           return response.text();
         })
         .then(content => {
-          // Check if the file has real content
-          if (content.trim().length < 20) {
-            throw new Error("File is empty");
-          }
+          if (content.trim().length < 20) throw new Error("File is empty");
 
           frame.src = selectedWeek.file;
           frame.style.display = "block";
+
+          frame.onload = () => {
+            try {
+              const iframeDoc = frame.contentDocument || frame.contentWindow.document;
+
+              // Remove h1 if it's "Schedule for Week..."
+              const headings = iframeDoc.querySelectorAll("h1");
+              headings.forEach(h1 => {
+                if (/Schedule for Week/i.test(h1.textContent)) {
+                  h1.remove();
+                }
+              });
+
+              // Pull up content
+              const firstElement = iframeDoc.body.querySelector("*");
+              if (firstElement) {
+                firstElement.style.marginTop = "10px";
+              }
+
+              // Inject your requested styles
+              const style = iframeDoc.createElement("style");
+              style.innerHTML = `
+                h1, h2, header, title {
+                  display: none !important;
+                }
+                body {
+                  margin: 0 !important;
+                  padding: 0 !important;
+                }
+              `;
+              iframeDoc.head.appendChild(style);
+            } catch (e) {
+              console.error("Unable to inject style into iframe:", e);
+            }
+          };
         })
         .catch(err => {
           frame.style.display = "none";
           error.innerHTML = `
             ⚠️ The game schedule for <strong>Sunday, ${selectedWeek.date}</strong> hasn’t been uploaded yet.<br>
+            If you're responsible for uploading it, please do so as soon as possible so teams can prepare.
           `;
         });
     } else {
       frame.style.display = "none";
       error.innerHTML = `
-        ⚠️ The schedule for this week hasn’t been uploaded yet.<br>
+        ⚠️ The schedule is not yet available.<br>
+        If you're responsible for uploading it, please do so.
       `;
     }
 
