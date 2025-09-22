@@ -54,47 +54,50 @@
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const effectiveDate = new Date(today);
-    if (today.getDay() === 0) {
-      effectiveDate.setDate(effectiveDate.getDate() + 1); // Skip Sunday
-    }
-
-    const upcoming = weeks.find(week => {
-      const weekDate = new Date(week.date);
+    // Show current week if it's Sunday, otherwise show the next upcoming week
+    let selectedWeek = null;
+    for (let i = 0; i < weeks.length; i++) {
+      const weekDate = new Date(weeks[i].date);
       weekDate.setHours(0, 0, 0, 0);
-      const nextWeekDate = new Date(weekDate);
-      nextWeekDate.setDate(weekDate.getDate() + 7);
-      return effectiveDate >= weekDate && effectiveDate < nextWeekDate;
-    });
+
+      if (today.getDay() === 0 && today.getTime() === weekDate.getTime()) {
+        // If today is exactly Sunday (same as the week date), show this week
+        selectedWeek = weeks[i];
+        break;
+      } else if (today < weekDate) {
+        // Otherwise, show the next upcoming week
+        selectedWeek = weeks[i];
+        break;
+      }
+    }
 
     const frame = document.getElementById("scheduleFrame");
     const error = document.getElementById("errorMsg");
 
-    if (upcoming) {
-      frame.src = upcoming.file;
+    if (selectedWeek) {
+      frame.src = selectedWeek.file;
 
       frame.onload = () => {
         try {
           const iframeDoc = frame.contentDocument || frame.contentWindow.document;
           const style = iframeDoc.createElement("style");
           style.innerHTML = `
-            h1, h2, header, title {
-              display: none !important;
-            }
-            body {
-              margin: 0 !important;
-              padding: 0 !important;
-            }
+            h1, h2, header, title { display: none !important; }
+            body { margin: 0 !important; padding: 0 !important; }
           `;
           iframeDoc.head.appendChild(style);
         } catch (e) {
-          console.error("Unable to inject style into iframe:", e);
+          console.error("Unable to inject style:", e);
         }
       };
     } else {
       frame.style.display = "none";
-      error.textContent = "No current schedule found.";
+      error.textContent = "No schedule available yet.";
     }
+
+    // Debug logs
+    console.log("Today:", today.toDateString());
+    console.log("Showing:", selectedWeek ? selectedWeek.file : "None");
   </script>
 </body>
 </html>
