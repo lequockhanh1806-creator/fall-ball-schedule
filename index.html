@@ -30,18 +30,19 @@
       color: red;
       font-weight: bold;
       margin-top: 20px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <iframe id="scheduleFrame" title="Fall Ball Schedule Viewer"></iframe>
+  <iframe id="scheduleFrame" title="Fall Ball Schedule Viewer" style="display: none;"></iframe>
   <div id="errorMsg" class="error"></div>
 
   <script>
     const weeks = [
       { file: "Week01.html", date: "2025-09-14" },
       { file: "Week02.html", date: "2025-09-21" },
-      { file: "Week03.html", date: "2025-09-28" },
+      { file: "Week03.html", date: "2025-09-22" },
       { file: "Week04.html", date: "2025-10-05" },
       { file: "Week05.html", date: "2025-10-12" },
       { file: "Week06.html", date: "2025-10-19" },
@@ -61,11 +62,9 @@
       weekDate.setHours(0, 0, 0, 0);
 
       if (today.getDay() === 0 && today.getTime() === weekDate.getTime()) {
-        // If today is exactly Sunday (same as the week date), show this week
         selectedWeek = weeks[i];
         break;
       } else if (today < weekDate) {
-        // Otherwise, show the next upcoming week
         selectedWeek = weeks[i];
         break;
       }
@@ -75,29 +74,38 @@
     const error = document.getElementById("errorMsg");
 
     if (selectedWeek) {
-      frame.src = selectedWeek.file;
+      // Try to fetch the file before showing it
+      fetch(selectedWeek.file)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("File not found");
+          }
+          return response.text();
+        })
+        .then(content => {
+          // Check if the file has real content
+          if (content.trim().length < 20) {
+            throw new Error("File is empty");
+          }
 
-      frame.onload = () => {
-        try {
-          const iframeDoc = frame.contentDocument || frame.contentWindow.document;
-          const style = iframeDoc.createElement("style");
-          style.innerHTML = `
-            h1, h2, header, title { display: none !important; }
-            body { margin: 0 !important; padding: 0 !important; }
+          frame.src = selectedWeek.file;
+          frame.style.display = "block";
+        })
+        .catch(err => {
+          frame.style.display = "none";
+          error.innerHTML = `
+            ⚠️ The schedule for the week starting <strong>${selectedWeek.date}</strong> hasn’t been uploaded yet.<br>
           `;
-          iframeDoc.head.appendChild(style);
-        } catch (e) {
-          console.error("Unable to inject style:", e);
-        }
-      };
+        });
     } else {
       frame.style.display = "none";
-      error.textContent = "No schedule available yet.";
+      error.innerHTML = `
+        ⚠️ The schedule for this week hasn’t been uploaded yet.<br>
+      `;
     }
 
-    // Debug logs
     console.log("Today:", today.toDateString());
-    console.log("Showing:", selectedWeek ? selectedWeek.file : "None");
+    console.log("Selected week:", selectedWeek);
   </script>
 </body>
 </html>
