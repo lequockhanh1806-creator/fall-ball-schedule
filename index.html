@@ -56,17 +56,23 @@
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Show current week if it's Sunday, otherwise show the next upcoming week
     let selectedWeek = null;
+
     for (let i = 0; i < weeks.length; i++) {
-      const weekDate = new Date(weeks[i].date);
+      const weekDate = new Date(weeks[i].date); // Sunday
       weekDate.setHours(0, 0, 0, 0);
 
-      if (today.getDay() === 0 && today.getTime() === weekDate.getTime()) {
+      const nextMonday = new Date(weekDate);
+      nextMonday.setDate(weekDate.getDate() + 1); // Monday after this Sunday
+
+      // Show this week on Sunday
+      if (today.getTime() === weekDate.getTime()) {
         selectedWeek = weeks[i];
         break;
-      } else if (today < weekDate) {
-        selectedWeek = weeks[i];
+      }
+      // Switch to next week starting Monday
+      else if (today >= nextMonday && i + 1 < weeks.length && today < new Date(weeks[i + 1].date)) {
+        selectedWeek = weeks[i + 1];
         break;
       }
     }
@@ -104,7 +110,7 @@
                 firstElement.style.marginTop = "10px";
               }
 
-              // Inject your requested styles
+              // Inject styles
               const style = iframeDoc.createElement("style");
               style.innerHTML = `
                 h1, h2, header, title {
