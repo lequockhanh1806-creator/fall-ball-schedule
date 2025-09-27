@@ -41,16 +41,16 @@
 
   <script>
     const weeks = [
-      { file: "Week01.html", date: "2025-09-14" },
-      { file: "Week02.html", date: "2025-09-21" },
-      { file: "Week03.html", date: "2025-09-28" },
-      { file: "Week04.html", date: "2025-10-05" },
-      { file: "Week05.html", date: "2025-10-12" },
-      { file: "Week06.html", date: "2025-10-19" },
-      { file: "Week07.html", date: "2025-10-26" },
-      { file: "Week08.html", date: "2025-11-02" },
-      { file: "Week09.html", date: "2025-11-09" },
-      { file: "Week10.html", date: "2025-11-16" }
+      { file: "Week01.html", date: "2025-09-15" },
+      { file: "Week02.html", date: "2025-09-22" },
+      { file: "Week03.html", date: "2025-09-29" },
+      { file: "Week04.html", date: "2025-10-06" },
+      { file: "Week05.html", date: "2025-10-13" },
+      { file: "Week06.html", date: "2025-10-20" },
+      { file: "Week07.html", date: "2025-10-27" },
+      { file: "Week08.html", date: "2025-11-03" },
+      { file: "Week09.html", date: "2025-11-10" },
+      { file: "Week10.html", date: "2025-11-17" }
     ];
 
     const today = new Date();
@@ -129,9 +129,17 @@
         })
         .catch(err => {
           frame.style.display = "none";
+          // Calculate Sunday (1 day before the Monday of the selectedWeek)
+          const sundayBefore = new Date(selectedWeek.date);
+          sundayBefore.setDate(sundayBefore.getDate());
+
+          const options = { weekday: 'short', month: 'short', day: 'numeric' };
+          const formatted = sundayBefore.toLocaleDateString('en-US', options);
+
           error.innerHTML = `
-            ⚠️ The game schedule for <strong>Sunday, ${selectedWeek.date}</strong> hasn’t been uploaded yet.<br>
+            ⚠️ The game schedule for <strong>${formatted}</strong> hasn’t been uploaded yet.<br>
           `;
+
         });
     } else {
       frame.style.display = "none";
