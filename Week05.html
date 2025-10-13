@@ -574,13 +574,22 @@ font-style:normal'>Fall Ball Week 5</h1>
 
 </div>
 
-<button onclick="sendText()">Confirm Availability</button>
+<button onclick="sendText()">Confirm Games</button>
 
 <script>
 function sendText() {
-  const phoneNumber = '+15622080221'; // Replace with your full number, include country code
+  const phoneNumber = '+15622080221'; // Include country code
   const message = encodeURIComponent('Hey Tom! Confirmed for the Game(s).');
-  const smsLink = `sms:${phoneNumber}&body=${message}`;
+
+  // Detect if user is on iPhone or Android
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  // Use iOS-compatible format for iPhone, Android format otherwise
+  const smsLink = isIOS
+    ? `sms:${phoneNumber}?&body=${message}`
+    : `sms:${phoneNumber}?body=${message}`;
+
+  // Navigate to the SMS link
   window.location.href = smsLink;
 }
 </script>
