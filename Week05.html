@@ -574,17 +574,16 @@ font-style:normal'>Fall Ball Week 5</h1>
 
 </div>
 
-<button onclick="sendText()">Confirm Game Availability</button>
+<button onclick="sendText()">Confirm Availability</button>
 
-  <!-- ?? Add this script before the closing </body> tag -->
-  <script>
-    function sendText() {
-      const phoneNumber = '+5622080221'; // Replace with your number
-      const message = encodeURIComponent('Hey Tom! Confirmed for the Game(s).');
-      const smsLink = `sms:${phoneNumber}?body=${message}`;
-      window.location.href = smsLink;
-    }
-  </script>
+<script>
+function sendText() {
+  const phoneNumber = '+15622080221'; // Replace with your full number, include country code
+  const message = encodeURIComponent('Hey Tom! Confirmed for the Game(s).');
+  const smsLink = `sms:${phoneNumber}&body=${message}`;
+  window.location.href = smsLink;
+}
+</script>
 
 <!----------------------------->
 <!--END OF OUTPUT FROM EXCEL PUBLISH AS WEB PAGE WIZARD-->
