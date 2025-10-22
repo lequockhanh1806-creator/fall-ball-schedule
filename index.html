@@ -4,40 +4,62 @@
   <meta charset="UTF-8">
   <title>Umpire Schedule</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      flex-direction: column;
-    }
-
-    iframe {
-      width: 100%;
-      max-width: 800px;
-      height: 1000px;
-      border: none;
-      box-shadow: 0 0 12px rgba(0,0,0,0.2);
-      background: white;
-      display: none;
-    }
-
-    .error {
-      color: red;
-      font-weight: bold;
-      margin-top: 20px;
-      text-align: center;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <iframe id="scheduleFrame" title="Fall Ball Schedule Viewer"></iframe>
   <div id="errorMsg" class="error"></div>
+
+  <!-- ✅ Three stacked buttons (initially hidden) -->
+  <div id="actionButtons" style="display: none; flex-direction: column; gap: 12px; margin: 20px 0; align-items: center;">
+    <a href="sms:5622080221?body=I confirm my schedule." style="text-decoration: none;">
+      <button style="
+        width: 280px;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: bold;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      ">
+        Press to Confirm
+      </button>
+    </a>
+
+    <a href="sms:5622080221?body=I can't do the game schedule." style="text-decoration: none;">
+      <button style="
+        width: 280px;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: bold;
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      ">
+        Press to Reject
+      </button>
+    </a>
+
+    <a href="sms:5622080221?body=This time doesn't work for me, can I request a different time." style="text-decoration: none;">
+      <button style="
+        width: 280px;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: bold;
+        background-color: #ffc107;
+        color: black;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      ">
+        Press to Request a Change
+      </button>
+    </a>
+  </div>
 
   <script>
     const weeks = [
@@ -55,23 +77,18 @@
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     let selectedWeek = null;
 
     for (let i = 0; i < weeks.length; i++) {
-      const weekDate = new Date(weeks[i].date); // Sunday
+      const weekDate = new Date(weeks[i].date);
       weekDate.setHours(0, 0, 0, 0);
-
       const nextMonday = new Date(weekDate);
-      nextMonday.setDate(weekDate.getDate() + 1); // Monday after this Sunday
+      nextMonday.setDate(weekDate.getDate() + 1);
 
-      // Show this week on Sunday
       if (today.getTime() === weekDate.getTime()) {
         selectedWeek = weeks[i];
         break;
-      }
-      // Switch to next week starting Monday
-      else if (today >= nextMonday && i + 1 < weeks.length && today < new Date(weeks[i + 1].date)) {
+      } else if (today >= nextMonday && i + 1 < weeks.length && today < new Date(weeks[i + 1].date)) {
         selectedWeek = weeks[i + 1];
         break;
       }
@@ -79,6 +96,7 @@
 
     const frame = document.getElementById("scheduleFrame");
     const error = document.getElementById("errorMsg");
+    const buttons = document.getElementById("actionButtons");
 
     if (selectedWeek) {
       fetch(selectedWeek.file)
@@ -89,28 +107,21 @@
         .then(content => {
           if (content.trim().length < 20) throw new Error("File is empty");
 
+          // ✅ Show schedule + buttons only if file is valid
           frame.src = selectedWeek.file;
           frame.style.display = "block";
+          buttons.style.display = "flex";
 
           frame.onload = () => {
             try {
               const iframeDoc = frame.contentDocument || frame.contentWindow.document;
-
-              // Remove h1 if it's "Schedule for Week..."
               const headings = iframeDoc.querySelectorAll("h1");
               headings.forEach(h1 => {
-                if (/Schedule for Week/i.test(h1.textContent)) {
-                  h1.remove();
-                }
+                if (/Schedule for Week/i.test(h1.textContent)) h1.remove();
               });
-
-              // Pull up content
               const firstElement = iframeDoc.body.querySelector("*");
-              if (firstElement) {
-                firstElement.style.marginTop = "10px";
-              }
+              if (firstElement) firstElement.style.marginTop = "10px";
 
-              // Inject styles
               const style = iframeDoc.createElement("style");
               style.innerHTML = `
                 h1, h2, header, title {
@@ -128,28 +139,20 @@
           };
         })
         .catch(err => {
+          // ❌ Hide frame and buttons if schedule not uploaded
           frame.style.display = "none";
-          // Calculate Sunday (1 day before the Monday of the selectedWeek)
+          buttons.style.display = "none";
           const sundayBefore = new Date(selectedWeek.date);
-          sundayBefore.setDate(sundayBefore.getDate());
-
           const options = { weekday: 'short', month: 'short', day: 'numeric' };
           const formatted = sundayBefore.toLocaleDateString('en-US', options);
-
-          error.innerHTML = `
-            ⚠️ The game schedule for <strong>${formatted}</strong> hasn’t been uploaded yet.<br>
-          `;
-
+          error.innerHTML = `⚠️ The game schedule for <strong>${formatted}</strong> hasn’t been uploaded yet.<br>`;
         });
     } else {
+      // ❌ Hide everything if no valid week
       frame.style.display = "none";
-      error.innerHTML = `
-        ⚠️ The schedule is not yet available.<br>
-      `;
+      buttons.style.display = "none";
+      error.innerHTML = `⚠️ The schedule is not yet available.<br>`;
     }
-
-    console.log("Today:", today.toDateString());
-    console.log("Selected week:", selectedWeek);
   </script>
 </body>
 </html>
