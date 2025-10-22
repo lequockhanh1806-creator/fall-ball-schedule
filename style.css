@@ -3,32 +3,75 @@ body {
   background: #f8f9fa;
   margin: 0;
   padding: 20px;
-}
-h1 {
-  text-align: center;
-}
-.calendar {
-  display: flex;
-  justify-content: center;
-  gap: 40px; /* space between the 2 columns */
-  margin-top: 20px;
-}
-.column {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
 }
-.day {
+
+iframe {
+  width: 100%;
+  max-width: 800px;
+  height: 400px;
+  border: none;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
   background: white;
-  border: 1px solid #ddd;
-  padding: 15px;
-  text-align: center;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: background 0.2s;
-  width: 80px; /* consistent width */
+  display: none;
 }
-.day:hover {
-  background: #007bff;
+
+.error {
+  color: red;
+  font-weight: bold;
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* === BUTTON SECTION === */
+.button-group {
+  display: flex;
+  flex-direction: column; /* stack vertically */
+  align-items: center;
+  gap: 12px;
+  margin: 30px 0;
+}
+
+/* Base button style */
+.confirm-button {
+  display: block;
+  width: 260px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: Verdana, sans-serif;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 6px;
+  border: none;
+  transition: background 0.3s ease;
+}
+
+/* Green - Confirm */
+.confirm-button.green {
+  background-color: #28a745;
   color: white;
+}
+.confirm-button.green:hover {
+  background-color: #218838;
+}
+
+/* Red - Reject */
+.confirm-button.red {
+  background-color: #dc3545;
+  color: white;
+}
+.confirm-button.red:hover {
+  background-color: #bd2130;
+}
+
+/* Yellow - Request Change */
+.confirm-button.yellow {
+  background-color: #ffc107;
+  color: black;
+}
+.confirm-button.yellow:hover {
+  background-color: #e0a800;
 }
