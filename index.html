@@ -41,7 +41,7 @@
 
   <script>
     const FILE_THIS_WEEK = "Week1.html";
-    const FILE_NEXT_WEEK = "Week2.html";
+    const FILE__WEEK = "Week2.html";
 
     const frame = document.getElementById("scheduleFrame");
     const error = document.getElementById("errorMsg");
@@ -49,7 +49,7 @@
     const toggleBtn = document.getElementById("toggleWeekBtn");
     const statusText = document.getElementById("weekStatus");
 
-    let showingNext = false;
+    let showing = false;
 
     async function loadSchedule(file) {
       // Reset UI
@@ -87,7 +87,7 @@
           }
         };
       } catch (e) {
-        error.innerHTML = `⚠️ Schedule not available yet. Please upload <strong>${file}</strong>.`;
+        error.innerHTML = `⚠️ Schedule not available yet for  WEEK.`;
       }
     }
 
@@ -95,13 +95,13 @@
     loadSchedule(FILE_THIS_WEEK);
 
     toggleBtn.addEventListener("click", () => {
-        showingNext = !showingNext;
+        showing = !showing;
 
-        toggleBtn.textContent = showingNext ? "View This Week" : "View Next Week";
+        toggleBtn.textContent = showing ? "<< View This Week" : "View Next Week >>";
 
         statusText.textContent = showingNext
-          ? "You are viewing: Next Week's Schedule"
-          : "You are viewing: This Week's Schedule";
+          ? "Next Week's Schedule (See Dates below)"
+          : "This Week's Schedule (See Dates below)";
 
         loadSchedule(showingNext ? FILE_NEXT_WEEK : FILE_THIS_WEEK);
       });
