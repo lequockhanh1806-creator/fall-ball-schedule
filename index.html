@@ -93,18 +93,23 @@
     }
 
     function updateLabels() {
-      // Toggle button text
-      toggleBtn.textContent = showingNext ? "<<< View This Week" : "View Next Week >>>";
+      if (showingNext) {
+        // Currently viewing NEXT week
+        toggleBtn.textContent = "<< View This Week";
+        toggleBtn.classList.remove("nav-next");
+        toggleBtn.classList.add("nav-this");
 
-      // Status line
-      statusText.textContent = showingNext
-        ? "Next Week's Schedule (See Dates below)"
-        : "This Week's Schedule (See Dates below)";
+        statusText.textContent = "Next Week's Schedule (See Dates below)";
+        confirmTitle.textContent = "Confirm Schedule Next Week";
+      } else {
+        // Currently viewing THIS week
+        toggleBtn.textContent = "View Next Week >>";
+        toggleBtn.classList.remove("nav-this");
+        toggleBtn.classList.add("nav-next");
 
-      // Confirm title above icons
-      confirmTitle.textContent = showingNext
-        ? "Confirm Schedule Next Week"
-        : "Confirm Schedule This Week";
+        statusText.textContent = "This Week's Schedule (See Dates below)";
+        confirmTitle.textContent = "Confirm Schedule This Week";
+      }
     }
 
     // Default load
