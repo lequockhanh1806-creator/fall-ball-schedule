@@ -24,8 +24,24 @@ body {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  background: #1e1e1e;
   color: white;
+  transition: background 0.2s ease;
+}
+
+/* When showing THIS week → button shows NEXT week → red */
+.nav-next {
+  background: #dc3545;
+}
+.nav-next:hover {
+  background: #b02a37;
+}
+
+/* When showing NEXT week → button shows THIS week → black */
+.nav-this {
+  background: #111;
+}
+.nav-this:hover {
+  background: #000;
 }
 
 .week-status {
