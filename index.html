@@ -8,11 +8,11 @@
 </head>
 <body>
   <div class="topbar">
-    <button id="toggleWeekBtn" class="nav-btn">View Next Week</button>
+    <button id="toggleWeekBtn" class="nav-btn">View Next Week >>></button>
   </div>
 
   <div id="weekStatus" class="week-status">
-    You are viewing: This Week's Schedule
+    This Week's Schedule (See Dates below)
   </div>
 
   <iframe id="scheduleFrame" title="Schedule Viewer"></iframe>
@@ -21,18 +21,18 @@
   <!-- Buttons (only show when a schedule file loads successfully) -->
   <div id="actionButtons" class="button-section" style="display:none;">
 
-    <div class="confirm-title">Confirm Schedule This Week</div>
+    <div id="confirmTitle" class="confirm-title">Confirm Schedule This Week</div>
 
     <div class="icon-row">
-      <a href="sms:5622080221?body=👍 Confirmed" class="icon-btn">
+      <a href="sms:5622080221?body=👍 Confirmed" class="icon-btn" aria-label="Confirm schedule">
         👍
       </a>
 
-      <a href="sms:5622080221?body=👎 Can't do these games" class="icon-btn">
+      <a href="sms:5622080221?body=👎 Can't do these games" class="icon-btn" aria-label="Reject schedule">
         👎
       </a>
 
-      <a href="sms:5622080221?body=I have an issue with these games. Can we change?" class="icon-btn">
+      <a href="sms:5622080221?body=I have an issue with these games. Can we change?" class="icon-btn" aria-label="Request change">
         🔄
       </a>
     </div>
@@ -41,15 +41,16 @@
 
   <script>
     const FILE_THIS_WEEK = "Week1.html";
-    const FILE__WEEK = "Week2.html";
+    const FILE_NEXT_WEEK = "Week2.html";
 
     const frame = document.getElementById("scheduleFrame");
     const error = document.getElementById("errorMsg");
     const buttons = document.getElementById("actionButtons");
     const toggleBtn = document.getElementById("toggleWeekBtn");
     const statusText = document.getElementById("weekStatus");
+    const confirmTitle = document.getElementById("confirmTitle");
 
-    let showing = false;
+    let showingNext = false;
 
     async function loadSchedule(file) {
       // Reset UI
@@ -74,7 +75,6 @@
           try {
             const iframeDoc = frame.contentDocument || frame.contentWindow.document;
 
-            // Hide common headers/titles
             const style = iframeDoc.createElement("style");
             style.innerHTML = `
               h1, h2, header, title { display: none !important; }
@@ -82,29 +82,40 @@
             `;
             iframeDoc.head.appendChild(style);
           } catch (e) {
-            // If cross-origin later, ignore
             console.warn("Iframe style injection failed:", e);
           }
         };
       } catch (e) {
-        error.innerHTML = `⚠️ Schedule not available yet for  WEEK.`;
+        // Show message depending on which one they tried to view
+        const which = (file === FILE_NEXT_WEEK) ? "NEXT WEEK" : "THIS WEEK";
+        error.innerHTML = `⚠️ Schedule not available yet for <strong>${which}</strong>.`;
       }
     }
 
-    // Default: load this week
+    function updateLabels() {
+      // Toggle button text
+      toggleBtn.textContent = showingNext ? "<<< View This Week" : "View Next Week >>>";
+
+      // Status line
+      statusText.textContent = showingNext
+        ? "Next Week's Schedule (See Dates below)"
+        : "This Week's Schedule (See Dates below)";
+
+      // Confirm title above icons
+      confirmTitle.textContent = showingNext
+        ? "Confirm Schedule Next Week"
+        : "Confirm Schedule This Week";
+    }
+
+    // Default load
+    updateLabels();
     loadSchedule(FILE_THIS_WEEK);
 
     toggleBtn.addEventListener("click", () => {
-        showing = !showing;
-
-        toggleBtn.textContent = showing ? "<< View This Week" : "View Next Week >>";
-
-        statusText.textContent = showingNext
-          ? "Next Week's Schedule (See Dates below)"
-          : "This Week's Schedule (See Dates below)";
-
-        loadSchedule(showingNext ? FILE_NEXT_WEEK : FILE_THIS_WEEK);
-      });
+      showingNext = !showingNext;
+      updateLabels();
+      loadSchedule(showingNext ? FILE_NEXT_WEEK : FILE_THIS_WEEK);
+    });
   </script>
 </body>
 </html>
