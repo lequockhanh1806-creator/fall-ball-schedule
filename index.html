@@ -1,158 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Umps</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <iframe id="scheduleFrame" title="Fall Ball Schedule Viewer"></iframe>
+  <div class="topbar">
+    <button id="toggleWeekBtn" class="nav-btn">View Next Week</button>
+  </div>
+
+  <div id="weekStatus" class="week-status">
+    You are viewing: This Week's Schedule
+  </div>
+
+  <iframe id="scheduleFrame" title="Schedule Viewer"></iframe>
   <div id="errorMsg" class="error"></div>
 
-  <!-- ✅ Three stacked buttons (initially hidden) -->
-  <div id="actionButtons" style="display: none; flex-direction: column; gap: 12px; margin: 20px 0; align-items: center;">
-    <a href="sms:5622080221?body=I confirm my schedule." style="text-decoration: none;">
-      <button style="
-        width: 280px;
-        padding: 14px;
-        font-size: 16px;
-        font-weight: bold;
-        background-color: #28a745;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-      ">
-        Press to Confirm
-      </button>
-    </a>
+  <!-- Buttons (only show when a schedule file loads successfully) -->
+  <div id="actionButtons" class="button-section" style="display:none;">
 
-    <a href="sms:5622080221?body=I can't do the game schedule." style="text-decoration: none;">
-      <button style="
-        width: 280px;
-        padding: 14px;
-        font-size: 16px;
-        font-weight: bold;
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-      ">
-        Press to Reject
-      </button>
-    </a>
+    <div class="confirm-title">Confirm Schedule This Week</div>
 
-    <a href="sms:5622080221?body=This time doesn't work for me, can I request a different time." style="text-decoration: none;">
-      <button style="
-        width: 280px;
-        padding: 14px;
-        font-size: 16px;
-        font-weight: bold;
-        background-color: #ffc107;
-        color: black;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-      ">
-        Press to Request a Change
-      </button>
-    </a>
+    <div class="icon-row">
+      <a href="sms:5622080221?body=I confirm my schedule." class="icon-btn">
+        👍
+      </a>
+
+      <a href="sms:5622080221?body=I can't do the game schedule." class="icon-btn">
+        👎
+      </a>
+
+      <a href="sms:5622080221?body=This time doesn't work for me, can I request a different time." class="icon-btn">
+        🔄
+      </a>
+    </div>
+
   </div>
 
   <script>
-    const weeks = [
-      { file: "Week01.html", date: "2025-09-15" },
-      { file: "Week02.html", date: "2025-09-22" },
-      { file: "Week03.html", date: "2025-09-29" },
-      { file: "Week04.html", date: "2025-10-06" },
-      { file: "Week05.html", date: "2025-10-13" },
-      { file: "Week06.html", date: "2025-10-20" },
-      { file: "Week07.html", date: "2026-02-02" },
-      { file: "Week08.html", date: "2026-02-09" },
-      { file: "Week09.html", date: "2026-02-16" },
-      { file: "Week10.html", date: "2026-02-23" }
-    ];
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    let selectedWeek = null;
-
-    for (let i = 0; i < weeks.length; i++) {
-      const weekDate = new Date(weeks[i].date);
-      weekDate.setHours(0, 0, 0, 0);
-      const nextMonday = new Date(weekDate);
-      nextMonday.setDate(weekDate.getDate() + 1);
-
-      if (today.getTime() === weekDate.getTime()) {
-        selectedWeek = weeks[i];
-        break;
-      } else if (today >= nextMonday && i + 1 < weeks.length && today < new Date(weeks[i + 1].date)) {
-        selectedWeek = weeks[i + 1];
-        break;
-      }
-    }
+    const FILE_THIS_WEEK = "schedulethisweek.html";
+    const FILE_NEXT_WEEK = "schedulenextweek.html";
 
     const frame = document.getElementById("scheduleFrame");
     const error = document.getElementById("errorMsg");
     const buttons = document.getElementById("actionButtons");
+    const toggleBtn = document.getElementById("toggleWeekBtn");
+    const statusText = document.getElementById("weekStatus");
 
-    if (selectedWeek) {
-      fetch(selectedWeek.file)
-        .then(response => {
-          if (!response.ok) throw new Error("File not found");
-          return response.text();
-        })
-        .then(content => {
-          if (content.trim().length < 20) throw new Error("File is empty");
+    let showingNext = false;
 
-          // ✅ Show schedule + buttons only if file is valid
-          frame.src = selectedWeek.file;
-          frame.style.display = "block";
-          buttons.style.display = "flex";
-
-          frame.onload = () => {
-            try {
-              const iframeDoc = frame.contentDocument || frame.contentWindow.document;
-              const headings = iframeDoc.querySelectorAll("h1");
-              headings.forEach(h1 => {
-                if (/Schedule for Week/i.test(h1.textContent)) h1.remove();
-              });
-              const firstElement = iframeDoc.body.querySelector("*");
-              if (firstElement) firstElement.style.marginTop = "10px";
-
-              const style = iframeDoc.createElement("style");
-              style.innerHTML = `
-                h1, h2, header, title {
-                  display: none !important;
-                }
-                body {
-                  margin: 0 !important;
-                  padding: 0 !important;
-                }
-              `;
-              iframeDoc.head.appendChild(style);
-            } catch (e) {
-              console.error("Unable to inject style into iframe:", e);
-            }
-          };
-        })
-        .catch(err => {
-          // ❌ Hide frame and buttons if schedule not uploaded
-          frame.style.display = "none";
-          buttons.style.display = "none";
-          const sundayBefore = new Date(selectedWeek.date);
-          const options = { weekday: 'short', month: 'short', day: 'numeric' };
-          const formatted = sundayBefore.toLocaleDateString('en-US', options);
-          error.innerHTML = `⚠️ The game schedule for <strong>${formatted}</strong> hasn’t been uploaded yet.<br>`;
-        });
-    } else {
-      // ❌ Hide everything if no valid week
+    async function loadSchedule(file) {
+      // Reset UI
+      error.textContent = "";
       frame.style.display = "none";
       buttons.style.display = "none";
-      error.innerHTML = `⚠️ The schedule is not available yet.<br>`;
+
+      try {
+        const res = await fetch(file, { cache: "no-store" });
+        if (!res.ok) throw new Error("File not found");
+
+        const content = await res.text();
+        if (content.trim().length < 20) throw new Error("File is empty");
+
+        // If valid, show
+        frame.src = file;
+        frame.style.display = "block";
+        buttons.style.display = "flex";
+
+        frame.onload = () => {
+          // Optional cleanup (only works same-origin)
+          try {
+            const iframeDoc = frame.contentDocument || frame.contentWindow.document;
+
+            // Hide common headers/titles
+            const style = iframeDoc.createElement("style");
+            style.innerHTML = `
+              h1, h2, header, title { display: none !important; }
+              body { margin: 0 !important; padding: 0 !important; }
+            `;
+            iframeDoc.head.appendChild(style);
+          } catch (e) {
+            // If cross-origin later, ignore
+            console.warn("Iframe style injection failed:", e);
+          }
+        };
+      } catch (e) {
+        error.innerHTML = `⚠️ Schedule not available yet. Please upload <strong>${file}</strong>.`;
+      }
     }
+
+    // Default: load this week
+    loadSchedule(FILE_THIS_WEEK);
+
+    toggleBtn.addEventListener("click", () => {
+        showingNext = !showingNext;
+
+        toggleBtn.textContent = showingNext ? "View This Week" : "View Next Week";
+
+        statusText.textContent = showingNext
+          ? "You are viewing: Next Week's Schedule"
+          : "You are viewing: This Week's Schedule";
+
+        loadSchedule(showingNext ? FILE_NEXT_WEEK : FILE_THIS_WEEK);
+      });
   </script>
 </body>
 </html>
